@@ -1,0 +1,6 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"framework": null,
+	"installCommand": "bun install",
+	"buildCommand": "node apps/api/scripts/build-func.mjs && node apps/api/scripts/strip-crons.mjs"
+}
