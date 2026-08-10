@@ -5,7 +5,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError } from "better-auth/api";
 import { organization } from "better-auth/plugins/organization";
 import { AUTH_COOKIE_PREFIX } from "./cookies";
-import { isDevAuthBypass } from "./dev";
+import { isAuthBypass } from "./dev";
 import { env } from "./env";
 import { ensureWorkspaceMembership } from "./organization";
 import { SYNC_SCOPES } from "./scopes";
@@ -38,7 +38,7 @@ export const auth = betterAuth({
 	}),
 
 	emailAndPassword: {
-		enabled: isDevAuthBypass(),
+		enabled: isAuthBypass(),
 	},
 
 	socialProviders,

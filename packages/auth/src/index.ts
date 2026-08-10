@@ -1,11 +1,11 @@
 export { type Auth, auth, type Session, type SessionUser } from "./auth";
 export { AUTH_COOKIE_PREFIX } from "./cookies";
 export {
-	DEV_SIGN_IN_NAME,
-	DEV_SIGN_IN_PASSWORD,
-	DEV_SIGN_IN_PATH,
-	devSignInEmail,
-	isDevAuthBypass,
+	BYPASS_SIGN_IN_NAME,
+	BYPASS_SIGN_IN_PASSWORD,
+	BYPASS_SIGN_IN_PATH,
+	bypassSignInEmail,
+	isAuthBypass,
 } from "./dev";
 export { isGoogleConfigured } from "./env";
 export {

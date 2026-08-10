@@ -1,7 +1,7 @@
 import { AUTH_COOKIE_PREFIX } from "@crm/auth/cookies";
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
-import { isDevAuthBypass, isMarketing } from "@/lib/env";
+import { isAuthBypass, isMarketing } from "@/lib/env";
 import {
 	type Gate,
 	ONBOARDING_PATH,
@@ -15,7 +15,7 @@ const LANDING_PATH = "/";
 
 const SIGN_IN_PATH = "/sign-in";
 
-const DEV_SIGN_IN_PATH = "/api/dev/sign-in";
+const BYPASS_SIGN_IN_PATH = "/api/bypass/sign-in";
 
 const UNGATED = ["/grant-access", "/eve"];
 
@@ -26,7 +26,7 @@ export async function proxy(request: NextRequest) {
 
 	if (pathname === SIGN_IN_PATH) return NextResponse.next();
 
-	const bypass = isDevAuthBypass();
+	const bypass = isAuthBypass();
 
 	if (
 		getSessionCookie(request, { cookiePrefix: AUTH_COOKIE_PREFIX }) === null
@@ -34,7 +34,7 @@ export async function proxy(request: NextRequest) {
 		if (isPublic(pathname)) return NextResponse.next();
 
 		return NextResponse.redirect(
-			new URL(bypass ? devSignIn(pathname) : SIGN_IN_PATH, request.nextUrl),
+			new URL(bypass ? bypassSignIn(pathname) : SIGN_IN_PATH, request.nextUrl),
 		);
 	}
 
@@ -59,8 +59,8 @@ export async function proxy(request: NextRequest) {
 	return sendTo(appPath(pathname, workspace.slug), request);
 }
 
-function devSignIn(pathname: string): string {
-	return `${DEV_SIGN_IN_PATH}?next=${encodeURIComponent(pathname)}`;
+function bypassSignIn(pathname: string): string {
+	return `${BYPASS_SIGN_IN_PATH}?next=${encodeURIComponent(pathname)}`;
 }
 
 function appPath(pathname: string, slug: string): string {

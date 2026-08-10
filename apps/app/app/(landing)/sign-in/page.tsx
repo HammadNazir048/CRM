@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
-import { isDevAuthBypass } from "@/lib/env";
+import { isAuthBypass } from "@/lib/env";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
 import { GoogleSignIn } from "./google-sign-in";
@@ -67,7 +67,7 @@ async function SignIn({
 	const insistOnGoogle = method === "google" && google;
 	const showSso = providers.length > 0 && !insistOnGoogle;
 	const showGoogle = google && (providers.length === 0 || insistOnGoogle);
-	const bypass = isDevAuthBypass();
+	const bypass = isAuthBypass();
 
 	if (!showSso && !showGoogle) {
 		return (
@@ -105,7 +105,7 @@ async function SignIn({
 function DevSignIn() {
 	return (
 		<Button asChild className="w-full" variant="outline">
-			<a href="/api/dev/sign-in">Continue without signing in (dev)</a>
+			<a href="/api/bypass/sign-in">Continue without signing in</a>
 		</Button>
 	);
 }

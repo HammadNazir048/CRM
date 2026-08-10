@@ -5,9 +5,6 @@ export function isMarketing(): boolean {
 	return process.env.IS_MARKETING === "true";
 }
 
-export function isDevAuthBypass(): boolean {
-	return (
-		process.env.NODE_ENV !== "production" &&
-		process.env.DEV_AUTH_BYPASS === "true"
-	);
+export function isAuthBypass(): boolean {
+	return process.env.AUTH_BYPASS === "true";
 }
