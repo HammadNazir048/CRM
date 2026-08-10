@@ -1,8 +1,9 @@
 import { AUTH_COOKIE_PREFIX } from "@crm/auth/cookies";
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
-import { isMarketing } from "@/lib/env";
+import { isDevAuthBypass, isMarketing } from "@/lib/env";
 import {
+	type Gate,
 	ONBOARDING_PATH,
 	RESEARCH_PATH,
 	readResearchGate,
@@ -14,6 +15,8 @@ const LANDING_PATH = "/";
 
 const SIGN_IN_PATH = "/sign-in";
 
+const DEV_SIGN_IN_PATH = "/api/dev/sign-in";
+
 const UNGATED = ["/grant-access", "/eve"];
 
 const SECTIONS = ["/companies", "/contacts", "/deals", "/settings"];
@@ -23,22 +26,28 @@ export async function proxy(request: NextRequest) {
 
 	if (pathname === SIGN_IN_PATH) return NextResponse.next();
 
+	const bypass = isDevAuthBypass();
+
 	if (
 		getSessionCookie(request, { cookiePrefix: AUTH_COOKIE_PREFIX }) === null
 	) {
-		return isPublic(pathname)
-			? NextResponse.next()
-			: NextResponse.redirect(new URL(SIGN_IN_PATH, request.nextUrl));
+		if (isPublic(pathname)) return NextResponse.next();
+
+		return NextResponse.redirect(
+			new URL(bypass ? devSignIn(pathname) : SIGN_IN_PATH, request.nextUrl),
+		);
 	}
 
 	if (isUngated(pathname)) return NextResponse.next();
 
 	// Both answers, every time, and concurrently — so the gate costs one round
 	// trip rather than two, and neither answer can be stale.
-	const [workspace, research] = await Promise.all([
+	const [read, research] = await Promise.all([
 		readWorkspaceGate(request),
-		readResearchGate(request),
+		bypass ? Promise.resolve<Gate>("settled") : readResearchGate(request),
 	]);
+
+	const workspace = bypass ? { ...read, gate: "settled" as const } : read;
 
 	if (workspace.gate === "required") return sendTo(ONBOARDING_PATH, request);
 	if (research === "required") return sendTo(RESEARCH_PATH, request);
@@ -48,6 +57,10 @@ export async function proxy(request: NextRequest) {
 	if (!settled || !workspace.slug) return NextResponse.next();
 
 	return sendTo(appPath(pathname, workspace.slug), request);
+}
+
+function devSignIn(pathname: string): string {
+	return `${DEV_SIGN_IN_PATH}?next=${encodeURIComponent(pathname)}`;
 }
 
 function appPath(pathname: string, slug: string): string {

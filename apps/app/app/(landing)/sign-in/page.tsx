@@ -1,7 +1,9 @@
+import { Button } from "@crm/ui/components/button";
 import type { Metadata } from "next";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { Suspense } from "react";
 import { AuthHeading, AuthShell } from "@/components/auth-shell";
+import { isDevAuthBypass } from "@/lib/env";
 import { getSession } from "@/lib/session";
 import { getServerQueryClient, getServerTrpc } from "@/lib/trpc/server";
 import { GoogleSignIn } from "./google-sign-in";
@@ -65,6 +67,7 @@ async function SignIn({
 	const insistOnGoogle = method === "google" && google;
 	const showSso = providers.length > 0 && !insistOnGoogle;
 	const showGoogle = google && (providers.length === 0 || insistOnGoogle);
+	const bypass = isDevAuthBypass();
 
 	if (!showSso && !showGoogle) {
 		return (
@@ -79,6 +82,8 @@ async function SignIn({
 					and restart. Your own identity provider can be added from Settings
 					once somebody is signed in.
 				</p>
+
+				{bypass ? <DevSignIn /> : null}
 			</>
 		);
 	}
@@ -92,6 +97,15 @@ async function SignIn({
 
 			{showSso ? <SsoSignIn providers={providers} /> : null}
 			{showGoogle ? <GoogleSignIn /> : null}
+			{bypass ? <DevSignIn /> : null}
 		</>
+	);
+}
+
+function DevSignIn() {
+	return (
+		<Button asChild className="w-full" variant="outline">
+			<a href="/api/dev/sign-in">Continue without signing in (dev)</a>
+		</Button>
 	);
 }

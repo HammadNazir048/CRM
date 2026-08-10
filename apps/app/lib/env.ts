@@ -4,3 +4,10 @@ export const API_URL =
 export function isMarketing(): boolean {
 	return process.env.IS_MARKETING === "true";
 }
+
+export function isDevAuthBypass(): boolean {
+	return (
+		process.env.NODE_ENV !== "production" &&
+		process.env.DEV_AUTH_BYPASS === "true"
+	);
+}
